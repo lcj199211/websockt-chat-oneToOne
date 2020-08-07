@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+  <display-name>WebSocket_Message</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <!-- 用于启动websocket -->
+  <filter>
+  	<filter-name>websocket</filter-name>
+  	<filter-class>filter.StartWebSocket</filter-class>
+  </filter>
+  
+  
+  <servlet>
+    <servlet-name>WebSocketMessage</servlet-name>
+    <servlet-class>action.WebSocketMessage</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>UnReadMsg</servlet-name>
+    <servlet-class>action.UnReadMsg</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>SendMsg</servlet-name>
+    <servlet-class>action.SendMsg</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>UpdAllMsgStatus</servlet-name>
+    <servlet-class>action.UpdAllMsgStatus</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>IsReadMsg</servlet-name>
+    <servlet-class>action.IsReadMsg</servlet-class>
+  </servlet>
+
+
+
+
+
+  <servlet-mapping>
+    <servlet-name>WebSocketMessage</servlet-name>
+    <url-pattern>/WebSocketMessage</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>UnReadMsg</servlet-name>
+    <url-pattern>/UnReadMsg</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SendMsg</servlet-name>
+    <url-pattern>/SendMsg</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>UpdAllMsgStatus</servlet-name>
+    <url-pattern>/UpdAllMsgStatus</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>IsReadMsg</servlet-name>
+    <url-pattern>/IsReadMsg</url-pattern>
+  </servlet-mapping>  
+  
+</web-app>

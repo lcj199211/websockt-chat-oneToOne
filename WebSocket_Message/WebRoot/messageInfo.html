@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta charset="UTF-8">
+    <title>messageInfo.html</title>
+	
+    <meta name="keywords" content="keyword1,keyword2,keyword3">
+    <meta name="description" content="this is my page">
+    <meta name="content-type" content="text/html; charset=UTF-8">
+    
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- <script src="https://cdn.jsdelivr.net/gh/jquery/jquery@3.2.1/dist/jquery.js"></script> -->
+    <script type="text/javascript" src="js/jquery-3.4.1.js"></script>
+    
+    <script type="text/javascript" src="js/ws_jack.js"></script>
+    <!-- 可聊天 可发送消息 -->
+    
+	<script type="text/javascript">	
+		fromName = "jack";
+		toName = "rose";
+		
+		$(function() {
+			
+			$("#me").text(toName);
+				
+			// 空格发送
+			$("textarea").on("keydown", function(e) {
+				if (e.which == 13 && e.ctrlKey) {
+					$(this).parent().find("input").click();
+				}
+			});		
+			
+			// 进入页面 消息全部发给我的改为已读 
+			$.ajax({
+				url: "UpdAllMsgStatus",
+				data: {"fromName":fromName, "toName":toName},
+				type: "post",
+				async: true,
+				success: function(data) {
+ 					
+				}
+			});
+						
+			// 加载已读消息
+			$.ajax({
+				url: "WebSocketMessage",
+				data: {"fromName":fromName, "toName":toName},
+				type: "post",
+				async: true,
+				success: function(msgList) {
+					appendMsg(msgList, $("#msgListLeft"));
+				}
+			});	
+			
+			// 通知对方 消息已读
+	        $.ajax({
+	        	url: "IsReadMsg",
+	        	type: "post",
+	        	data: {"fromName":fromName, "toName": toName, "isRead": "yes"},
+	        	async: true,
+	        	success: function(data) {
+	        		//alert("success");
+	        	}    	
+	        });				
+			
+			// 未读消息/发送来的消息
+			// 在ws已经接收
+		
+			// 发送消息
+			$("#leftSend").on("click", function() {
+				
+				var msg = $("#msgLeft").val();
+				if (msg) {
+					$.post("SendMsg", 
+						{"fromName":fromName, "toName":toName, "msgContent":msg}, 
+						function(data) {						
+							data = JSON.parse(data);
+						
+							$("#msgLeft").val("");
+							// 拼接我的消息 可以返回服务器时间
+							// var date = new Date().toLocaleString();
+							var my_msg = {"fromName":fromName,"msgContent":msg,"msgDate":data.date,"toName":toName, "flag":true};							
+							appendMsg(my_msg, $("#msgListLeft"));
+						}
+					);
+				}
+				
+			});
+			
+		});
+		
+		// 添加消息到div
+		function appendMsg(msgs, listElement) {
+			if (msgs.length > 0)
+				listElement.find("span").remove();
+
+			if (!msgs.length) {
+				if (msgs.length == 0)
+					return;
+				// 发送过来的单条消息
+				var ele = $("<div>" + "<div class=\"" + "left_title\">"
+						+ toName + "</div>"
+						+ "<div class=\"" + "left_time\">" + msgs.msgDate
+						+ "</div>" + "<div class=\"" + "left_msg\">"
+						+ msgs.msgContent + "</div>" + "</div>");
+
+				if (msgs.flag) {
+ 					ele = $("<div>" + "<div class=\"" + "right_title\">"
+						+ fromName + "</div>"
+						+ "<div class=\"" + "right_time\">" + msgs.msgDate			
+						+ "</div>"
+						+ "</div>" + "<div class=\"" + "right_msg\">"
+						+ msgs.msgContent + "</div>"
+						+ "<div class='right_time'> <label class='isRead'>未读</label> </div>"
+						+ "</div>");
+						
+						// <label class='isRead'>未读</label>					
+				}							 
+						
+				listElement.append(ele);				
+			} else {
+				// 历史
+				for (var i = 0; i < msgs.length; i++) {
+					
+					var msg = msgs[i];
+					// console.log("msg: " , msg);
+					
+					// 区分历史消息左右
+					dir = "left";
+					// 区分左右是谁
+					person = toName;
+					
+					if (msg.fromName == toName) {
+						// 发给我的消息
+						dir = "left";
+						person = toName;
+					} else {
+						dir = "right";
+						person = fromName;
+					}
+	
+					var ele = "<div>" + "<div class=\"" + dir + "_title\">"
+							+ person + "</div>"
+							+ "<div class=\"" + dir + "_time\">" + msg.msgDate
+							+ "</div>" + "<div class=\"" + dir + "_msg\">"
+							+ msg.msgContent + "</div>" + "</div>";
+					
+					// 拼接未读
+					if (msg.msgStatus == 0) {
+						ele += "<div class='right_time'><label class='isRead'>未读</label></div>"
+					}
+					
+					ele = $(ele);
+							
+					listElement.append(ele);
+		
+				}
+						
+			}
+			var x = listElement[0].scrollHeight - listElement[0].scrollTop;
+
+			//滚动条需要滚动的大小(底部)
+			var position = listElement[0].scrollHeight - listElement.height();
+
+			//JQuery动画
+			listElement.animate({
+				scrollTop : position
+			}, (x / 100 + 1) * 50, function() {
+				//当前动画执行完成之后
+			});					
+			
+		}		
+	
+	</script>
+    
+  </head>
+  
+  <body>
+    	
+	<h1>WebChat(ctrl+enter send message)</h1>
+	<table style="cellspacing='10' cellpadding='10' border='0'">
+		<tr>
+			<td>
+				<h3>
+					WebChat-<span id="me"></span>
+				</h3>
+
+				<fieldset>
+					<legend>消息列表</legend>
+					<div id="msgListLeft">
+						<span class="empty">-暂无消息-</span>
+					</div>
+				</fieldset> <br> <textarea id="msgLeft"></textarea> <br> 
+				<input type="button" id="leftSend" value="发送"></td>
+		</tr>
+	</table>    	
+  </body>
+</html>
